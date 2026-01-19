@@ -23,12 +23,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version:
-        - "3.10"
-        - "3.11"
-        - "3.12"
-        - "3.13"
-        - "3.14"
+        include:
+        - python-version: "3.10"
+          tox-env: py310
+        - python-version: "3.11"
+          tox-env: py311
+        - python-version: "3.12"
+          tox-env: py312
     steps:
     - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
     - name: Set up Python ${{ matrix.python-version }}
@@ -41,7 +42,7 @@ jobs:
         version: ">=0.8"
     - name: Run Tox
       run: |
-        uvx --with=tox-uv tox -e ${{ matrix.python-version }}
+        uvx --with=tox-uv tox -e ${{ matrix.tox-env }}
 
   typing:
     name: Type Checking
@@ -51,7 +52,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
       with:
-        python-version: 3.x
+        python-version: "3.11"
     - name: Setup uv
       uses: astral-sh/setup-uv@61cb8a9741eeb8a550a1b8544337180c0fc8476b # v7.2.0
       with:

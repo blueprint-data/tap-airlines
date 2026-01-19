@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-from typing import Any
+from datetime import datetime, timedelta, timezone
+from typing import Any, Mapping, cast
 
 from singer_sdk import SchemaDirectory, StreamSchema
 from singer_sdk.helpers.types import Context
@@ -38,7 +38,7 @@ class AerolineasAllFlightsStream(BlueprintdataStream):
 
     def _build_partitions(self) -> list[dict[str, Any]]:
         partitions: list[dict[str, Any]] = []
-        today = datetime.utcnow().date()
+        today = datetime.now(timezone.utc).date()
         for airport_iata in self.airports:
             for movtp in ("A", "D"):
                 for offset in range(0, self.days_back + 1):
@@ -54,10 +54,20 @@ class AerolineasAllFlightsStream(BlueprintdataStream):
 
     def get_url_params(self, context: Context | None, next_page_token: Any | None):
         """Build request params for each context."""
-        context = context or {}
-        airport = context.get("airport_iata")
-        movtp = context.get("movtp")
-        date_iso = context.get("date")
+        if isinstance(context, dict):
+            ctx: dict[str, Any] = cast(dict[str, Any], context)
+        elif context is not None:
+            ctx = dict(context)
+        else:
+            ctx = {}
+
+        airport = ctx.get("airport_iata")
+        movtp = ctx.get("movtp")
+        date_iso = ctx.get("date")
+
+        if not isinstance(date_iso, str):
+            msg = f"Context date must be ISO format string, got {date_iso!r}"
+            raise ValueError(msg)
 
         try:
             date_obj = datetime.fromisoformat(date_iso).date()
@@ -66,7 +76,7 @@ class AerolineasAllFlightsStream(BlueprintdataStream):
             raise ValueError(msg) from exc
 
         formatted_date = date_obj.strftime("%d-%m-%Y")
-        context.setdefault("fetched_at", utc_now_iso())
+        ctx.setdefault("fetched_at", utc_now_iso())
 
         self.logger.info(
             "Requesting flights",

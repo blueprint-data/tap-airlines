@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
@@ -49,7 +49,7 @@ def _coerce_date(raw_date: str | None) -> datetime.date:
         except ValueError as exc:
             msg = "TAP_AIRLINES_DATE must be YYYY-MM-DD if provided."
             raise SystemExit(msg) from exc
-    return datetime.utcnow().date()
+    return datetime.now(timezone.utc).date()
 
 
 def main() -> None:
