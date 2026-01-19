@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from singer_sdk.streams import rest as rest_stream
 from singer_sdk.testing import get_tap_test_class
@@ -20,14 +20,14 @@ def _fake_request_records(self, context):
     context = context or {
         "airport_iata": "AEP",
         "movtp": "A",
-        "date": datetime.utcnow().date().isoformat(),
+        "date": datetime.now(timezone.utc).date().isoformat(),
     }
 
     record = {key: None for key in self.schema["properties"].keys()}
     record.update(
         {
             "id": "1",
-            "stda": datetime.utcnow().isoformat(),
+            "stda": datetime.now(timezone.utc).isoformat(),
         },
     )
     enriched = self.post_process(record, context)

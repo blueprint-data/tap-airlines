@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from singer_sdk import SchemaDirectory, StreamSchema
@@ -38,7 +38,7 @@ class AerolineasAllFlightsStream(BlueprintdataStream):
 
     def _build_partitions(self) -> list[dict[str, Any]]:
         partitions: list[dict[str, Any]] = []
-        today = datetime.utcnow().date()
+        today = datetime.now(timezone.utc).date()
         for airport_iata in self.airports:
             for movtp in ("A", "D"):
                 for offset in range(0, self.days_back + 1):
