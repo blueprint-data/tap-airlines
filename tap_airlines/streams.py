@@ -55,7 +55,7 @@ class AerolineasAllFlightsStream(BlueprintdataStream):
     def get_url_params(self, context: Context | None, next_page_token: Any | None):
         """Build request params for each context."""
         if isinstance(context, dict):
-            ctx: dict[str, Any] = context
+            ctx: dict[str, Any] = cast(dict[str, Any], context)
         elif context is not None:
             ctx = dict(context)
         else:
