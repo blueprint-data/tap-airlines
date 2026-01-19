@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, Mapping, cast
 
 from singer_sdk import SchemaDirectory, StreamSchema
 from singer_sdk.helpers.types import Context
@@ -54,10 +54,14 @@ class AerolineasAllFlightsStream(BlueprintdataStream):
 
     def get_url_params(self, context: Context | None, next_page_token: Any | None):
         """Build request params for each context."""
-        base_ctx: dict[str, Any] = context if isinstance(context, dict) else dict(context or {})
-        airport = base_ctx.get("airport_iata")
-        movtp = base_ctx.get("movtp")
-        date_iso = base_ctx.get("date")
+        if isinstance(context, dict):
+            ctx: dict[str, Any] = context
+        else:
+            ctx = dict(cast(Mapping[str, Any], context)) if context else {}
+
+        airport = ctx.get("airport_iata")
+        movtp = ctx.get("movtp")
+        date_iso = ctx.get("date")
 
         if not isinstance(date_iso, str):
             msg = f"Context date must be ISO format string, got {date_iso!r}"
@@ -70,7 +74,7 @@ class AerolineasAllFlightsStream(BlueprintdataStream):
             raise ValueError(msg) from exc
 
         formatted_date = date_obj.strftime("%d-%m-%Y")
-        base_ctx.setdefault("fetched_at", utc_now_iso())
+        ctx.setdefault("fetched_at", utc_now_iso())
 
         self.logger.info(
             "Requesting flights",
