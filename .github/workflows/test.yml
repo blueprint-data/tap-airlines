@@ -23,10 +23,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version:
-        - "310"
-        - "311"
-        - "312"
+        include:
+        - python-version: "3.10"
+          tox-env: py310
+        - python-version: "3.11"
+          tox-env: py311
+        - python-version: "3.12"
+          tox-env: py312
     steps:
     - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
     - name: Set up Python ${{ matrix.python-version }}
@@ -39,7 +42,7 @@ jobs:
         version: ">=0.8"
     - name: Run Tox
       run: |
-        uvx --with=tox-uv tox -e py${{ matrix.python-version }}
+        uvx --with=tox-uv tox -e ${{ matrix.tox-env }}
 
   typing:
     name: Type Checking
